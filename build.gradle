@@ -9,22 +9,13 @@ ext {
   bouncyCastleVersion = '1.64'
 }
 
-
-if (JavaVersion.current().isJava8Compatible()) {
-  allprojects {
-    tasks.withType(Javadoc) {
-      options.addStringOption('Xdoclint:none', '-quiet')
-    }
-  }
-}
-
-sourceCompatibility = 1.8
+defaultTasks 'clean', 'buildCSR'
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 group   = 'io.github.quotidian-ennui'
 
 repositories {
   mavenCentral()
-  maven { url "https://nexus.adaptris.net/nexus/content/groups/public" }
-  maven { url "https://nexus.adaptris.net/nexus/content/repositories/snapshots" }
 }
 
 
@@ -46,7 +37,7 @@ configurations {
 }
 
 configurations.all {
-  resolutionStrategy.cacheChangingModulesFor 0, "seconds"
+  resolutionStrategy.cacheChangingModulesFor 60, "minutes"
 }
 
 dependencies {
