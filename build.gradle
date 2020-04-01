@@ -1,0 +1,85 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+plugins {
+  id "java"
+}
+ext {
+  slf4jVersion = '1.7.30'
+  awsSDKVersion='1.11.756'
+  bouncyCastleVersion = '1.64'
+}
+
+
+if (JavaVersion.current().isJava8Compatible()) {
+  allprojects {
+    tasks.withType(Javadoc) {
+      options.addStringOption('Xdoclint:none', '-quiet')
+    }
+  }
+}
+
+sourceCompatibility = 1.8
+group   = 'io.github.quotidian-ennui'
+
+repositories {
+  mavenCentral()
+  maven { url "https://nexus.adaptris.net/nexus/content/groups/public" }
+  maven { url "https://nexus.adaptris.net/nexus/content/repositories/snapshots" }
+}
+
+
+def asFileUrl(filepath) {
+  return "file:///" + new java.net.URI(null, filepath, null).toASCIIString();
+}
+
+configurations {
+  all*.exclude group: 'c3p0'
+  all*.exclude group: 'commons-logging'
+  all*.exclude group: 'javamail'
+  all*.exclude group: 'javax.mail', module: 'mail'
+  all*.exclude group: 'org.glassfish.hk2.external'
+  all*.exclude group: 'xalan', module: 'xalan'
+  all*.exclude group: 'net.sf.saxon', module: 'saxon'
+  all*.exclude group: 'org.codehaus.woodstox'
+  all*.exclude group: 'org.fasterxml.woodstox'
+  all*.exclude group: 'org.eclipse.jetty.orbit', module: 'javax.mail.glassfish'
+}
+
+configurations.all {
+  resolutionStrategy.cacheChangingModulesFor 0, "seconds"
+}
+
+dependencies {
+  compile ("com.amazonaws:aws-java-sdk-kms:$awsSDKVersion")
+  compile ("org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion")
+  compile ("org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion")
+  compile ("org.bouncycastle:bcmail-jdk15on:$bouncyCastleVersion")
+
+  runtime ("org.slf4j:slf4j-api:$slf4jVersion")
+  runtime ("org.slf4j:slf4j-simple:$slf4jVersion")
+
+  runtime ("org.slf4j:jcl-over-slf4j:$slf4jVersion")
+
+}
+
+task LauncherJar(type: Jar) {
+    appendix = "launcher"
+    ext.launcherClasspath = { ->
+      def verifyLibs = [
+              configurations.runtime.collect { asFileUrl(it.getCanonicalPath()) }.join(' '),
+              asFileUrl(jar.archivePath.getCanonicalPath())
+              ]
+      return verifyLibs.join(' ')
+    }
+    manifest {
+        attributes ("Class-Path": launcherClasspath())
+    }
+}
+
+task buildCSR(type: JavaExec, dependsOn: [jar, LauncherJar]) {
+    group = 'Execution'
+    description = 'Generate a CSR'
+    classpath = files(LauncherJar.archivePath)
+    main = 'io.github.quotidianennui.CertRequestBuilder'
+    args "$projectDir/build.properties"
+}
