@@ -1,12 +1,12 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
 plugins {
-  id "java"
+  id "java-library"
 }
 ext {
-  slf4jVersion = '1.7.30'
-  awsSDKVersion='1.11.756'
-  bouncyCastleVersion = '1.64'
+  slf4jVersion = '1.7.32'
+  awsSDKVersion='1.12.118'
+  bouncyCastleVersion = '1.69'
 }
 
 defaultTasks 'clean', 'buildCSR'
@@ -41,15 +41,15 @@ configurations.all {
 }
 
 dependencies {
-  compile ("com.amazonaws:aws-java-sdk-kms:$awsSDKVersion")
-  compile ("org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion")
-  compile ("org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion")
-  compile ("org.bouncycastle:bcmail-jdk15on:$bouncyCastleVersion")
+  implementation ("com.amazonaws:aws-java-sdk-kms:$awsSDKVersion")
+  implementation ("org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion")
+  implementation ("org.bouncycastle:bcpkix-jdk15on:$bouncyCastleVersion")
+  implementation ("org.bouncycastle:bcmail-jdk15on:$bouncyCastleVersion")
 
-  runtime ("org.slf4j:slf4j-api:$slf4jVersion")
-  runtime ("org.slf4j:slf4j-simple:$slf4jVersion")
+  implementation ("org.slf4j:slf4j-api:$slf4jVersion")
+  runtimeOnly ("org.slf4j:slf4j-simple:$slf4jVersion")
 
-  runtime ("org.slf4j:jcl-over-slf4j:$slf4jVersion")
+  runtimeOnly ("org.slf4j:jcl-over-slf4j:$slf4jVersion")
 
 }
 
@@ -57,7 +57,7 @@ task LauncherJar(type: Jar) {
     appendix = "launcher"
     ext.launcherClasspath = { ->
       def verifyLibs = [
-              configurations.runtime.collect { asFileUrl(it.getCanonicalPath()) }.join(' '),
+              configurations.runtimeClasspath.collect { asFileUrl(it.getCanonicalPath()) }.join(' '),
               asFileUrl(jar.archivePath.getCanonicalPath())
               ]
       return verifyLibs.join(' ')
