@@ -50,6 +50,9 @@ dependencies {
   runtimeOnly ("org.slf4j:slf4j-simple:$slf4jVersion")
 
   runtimeOnly ("org.slf4j:jcl-over-slf4j:$slf4jVersion")
+  if (JavaVersion.current().ordinal() >= JavaVersion.VERSION_1_9.ordinal()) {
+    runtimeOnly ("javax.xml.bind:jaxb-api:2.3.1")
+  }
 
 }
 
