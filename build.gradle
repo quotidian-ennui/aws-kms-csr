@@ -74,6 +74,6 @@ task buildCSR(type: JavaExec, dependsOn: [jar, LauncherJar]) {
     group = 'Execution'
     description = 'Generate a CSR'
     classpath = files(LauncherJar.archivePath)
-    main = 'io.github.quotidianennui.CertRequestBuilder'
+    mainClass = 'io.github.quotidianennui.CertRequestBuilder'
     args "$projectDir/build.properties"
 }
