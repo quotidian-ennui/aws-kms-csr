@@ -14,15 +14,14 @@ jobs:
       - name: log conditions
         id: debug-step
         run: |
-          echo "${{ github.event.workflow_run.conclusion }}"
-          echo "${{ github.event.sender.login }}"
-          echo "${{ github.ref_name }}"
+          echo "Workflow Status : ${{ github.event.workflow_run.conclusion }}"
+          echo "Workflow head_branch: ${{ github.event.workflow_run.head_branch }}"
+          echo "Event Actor: ${{ github.event.sender.login }}"
       - name: merge-if-build-success
         uses: ridedott/merge-me-action@v2
         if: |
           github.event.workflow_run.conclusion == 'success' &&
-          github.event.sender.login == 'dependabot[bot]' &&
-          startsWith(github.ref_name, 'dependabot')
+          github.event.sender.login == 'dependabot[bot]'
         with:
           # Depending on branch protection rules, a  manually populated
           # `GITHUB_TOKEN_WORKAROUND` secret with permissions to push to
