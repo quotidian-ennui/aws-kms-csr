@@ -11,17 +11,10 @@ jobs:
   attempt-automerge:
     runs-on: ubuntu-latest
     steps:
-      - name: log conditions
-        id: debug-step
-        run: |
-          echo "Workflow Status : ${{ github.event.workflow_run.conclusion }}"
-          echo "Workflow head_branch: ${{ github.event.workflow_run.head_branch }}"
-          echo "Event Actor: ${{ github.event.sender.login }}"
       - name: merge-if-build-success
         uses: ridedott/merge-me-action@v2
         if: |
-          github.event.workflow_run.conclusion == 'success' &&
-          github.event.sender.login == 'dependabot[bot]'
+          github.event.workflow_run.conclusion == 'success'
         with:
           # Depending on branch protection rules, a  manually populated
           # `GITHUB_TOKEN_WORKAROUND` secret with permissions to push to
