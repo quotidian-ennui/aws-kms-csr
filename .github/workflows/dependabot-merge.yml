@@ -12,8 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: debug
-        run: |
-          echo  "workflow_run.conclusion=${{ github.event.workflow_run.conclusion }}"
+        uses: hmarr/debug-action@v2
       - name: merge-if-build-success
         uses: ridedott/merge-me-action@v2
         if:  ${{ github.event.workflow_run.conclusion == 'success' }}
