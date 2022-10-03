@@ -5,7 +5,7 @@ plugins {
 }
 ext {
   slf4jVersion = '2.0.3'
-  awsSDKVersion='1.12.313'
+  awsSDKVersion='1.12.314'
   bouncyCastleVersion = '1.70'
 }
 
