@@ -7,10 +7,7 @@ on:
     workflows:
       - 'check'
 
-permissions:
-  contents: read
-  packages: write
-  repository-projects: write
+permissions: write-all
 
 jobs:
   attempt-automerge:
