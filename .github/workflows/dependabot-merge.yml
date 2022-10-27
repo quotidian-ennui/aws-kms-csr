@@ -25,6 +25,17 @@ jobs:
           route: GET /repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: can-query-protected-branches
+        id: can-query-protected-branches
+        continue-on-error: true
+        run: |
+          curl -X POST \
+          -si \
+          -H "Accept: application/vnd.github.package-deletes-preview+json" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" \
+          --data '{ repository(name: "aws-kms-csr", owner: "quotidian-ennui") { branchProtectionRules(first: 10) { edges { node { id } } } } }' \
+          --url https://api.github.com/graphql
       - name: merge-if-build-success
         uses: ridedott/merge-me-action@v2
         if:  |
