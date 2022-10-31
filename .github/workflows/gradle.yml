@@ -23,10 +23,9 @@ jobs:
         distribution: 'zulu'
     - name: Setup Ubuntu
       run: |
-        sudo apt-get -y update
-        sudo apt-get -y install haveged
-        sudo systemctl enable haveged
-        sudo systemctl restart haveged
+        sudo apt-get -y -qq update
+        sudo apt-get -y -qq install haveged
+        sudo systemctl -q enable haveged --now
     - name: Gradle Build
       uses: gradle/gradle-build-action@v2
       with:
