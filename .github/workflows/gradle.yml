@@ -10,9 +10,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -31,3 +29,27 @@ jobs:
       with:
         gradle-version: wrapper
         arguments: -Djava.security.egd=file:/dev/./urandom check
+
+
+  dependabot-merge:
+    needs: build
+    permissions:
+      contents: write
+      pull-requests: write
+    if: |
+      github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Find associated PR
+      uses: jwalton/gh-find-current-pr@v1
+      id: findpr
+      with:
+        github-token: ${{ github.token }}
+        state: open
+        sha: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
+    - name: merge-if-built
+      continue-on-error: true
+      uses: fastify/github-action-merge-dependabot@v3
+      with:
+        pr-number: ${{ steps.findpr.outputs.pr }}
+        target: minor
