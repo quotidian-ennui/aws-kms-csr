@@ -78,7 +78,6 @@ public class CertRequestBuilder {
   }
 
   public static void main(String[] argv) throws Exception {
-    AWSKMS kms = AWSKMSClientBuilder.standard().build();
     // Get the config file.
     String config = argv[0];
     new CertRequestBuilder(new File(config)).build();
