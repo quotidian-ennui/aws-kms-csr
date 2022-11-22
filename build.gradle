@@ -46,7 +46,7 @@ dependencies {
   implementation ("org.bouncycastle:bcprov-jdk18on:$bouncyCastleVersion")
   implementation ("org.bouncycastle:bcpkix-jdk18on:$bouncyCastleVersion")
   implementation ("org.bouncycastle:bcmail-jdk18on:$bouncyCastleVersion")
-  implementation (platform("com.fasterxml.jackson:jackson-bom:2.14.0"))
+  implementation (platform("com.fasterxml.jackson:jackson-bom:2.14.1"))
 
   implementation ("org.slf4j:slf4j-api:$slf4jVersion")
 
