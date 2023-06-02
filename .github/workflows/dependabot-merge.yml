@@ -35,7 +35,7 @@ jobs:
       # It was the PR merge from 1.12.264 to 265
       # https://github.com/community/community/discussions/21090
       - name: Get workflow_run.conclusion
-        uses: octokit/request-action@v2.1.7
+        uses: octokit/request-action@v2.1.8
         id: get_conclusion
         with:
           route: GET /repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}
