@@ -19,12 +19,13 @@ jobs:
       with:
         java-version: 11
         distribution: 'zulu'
-    - name: Gradle Build
-      uses: gradle/gradle-build-action@v2.12.0
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3.0.0
       with:
         gradle-version: wrapper
-        arguments: check
-
+    - name: Build with Gradle
+      run: |
+        ./gradlew check
 
   dependabot-merge:
     needs: build
