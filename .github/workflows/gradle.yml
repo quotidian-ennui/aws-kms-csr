@@ -20,7 +20,7 @@ jobs:
         java-version: 11
         distribution: 'zulu'
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3.3.2
+      uses: gradle/actions/setup-gradle@v3.4.0
       with:
         gradle-version: wrapper
     - name: Build with Gradle
