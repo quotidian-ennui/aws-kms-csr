@@ -8,12 +8,13 @@ There are no tests; I'm using Java *even though I probably don't need to*; but i
 
 ## Quickstart...
 
-* Assumes that you have pre-configured your environment to be able to access KWS (i.e. ~/.aws/credentials is good to go, or the appropriate environment variables are set).
+* Assumes that you have pre-configured your environment to be able to access AWS (i.e. `~/.aws/credentials` is good to go, or the appropriate environment variables are set).
 
-* Create a build.properties file
-```
-$ cat build.properties
-kms.keyId="alias/my alias in KMS" or the UUID.
+* Create a `build.properties` file in the project's root:
+
+```properties
+# or the UUID.
+kms.keyId=alias/my-alias-in-KMS
 
 # This stuff is optional and will be "defaulted"
 csr.outputFile=./build/the-output-file
@@ -25,6 +26,6 @@ csr.stateOrProvinceName=MyState
 csr.countryName=GB
 ```
 
-* ./gradlew buildCSR
-* You will see a file that looks that looks like a CSR (unless you have overridden it, it will be in `./build/my-csr.csr`)
+* `./gradlew buildCSR`
+* You will see a file that looks like a CSR (unless you have overridden it, it will be in `./build/my-csr.csr`)
 * You can check whether other things recognise it as a CSR by searching for something that allows you to view CSRs (e.g. use the search term "view csr", and you'll find a bunch of online locations where you can cut and paste that file to verify it).
