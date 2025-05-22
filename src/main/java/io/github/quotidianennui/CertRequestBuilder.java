@@ -10,11 +10,8 @@ import static io.github.quotidianennui.Config.CFG_CSR_STATE;
 import static io.github.quotidianennui.Config.CFG_KEY_ID;
 import static io.github.quotidianennui.Config.KMS_SIG_ALG;
 import static io.github.quotidianennui.Config.SIG_ALG_ID;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
+
+import java.io.*;
 import java.security.PublicKey;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -28,25 +25,21 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.bouncycastle.util.io.pem.PemObjectGenerator;
 import org.bouncycastle.util.io.pem.PemWriter;
-import com.amazonaws.services.kms.AWSKMS;
-import com.amazonaws.services.kms.AWSKMSClientBuilder;
-import com.amazonaws.services.kms.model.GetPublicKeyRequest;
-import com.amazonaws.services.kms.model.GetPublicKeyResult;
-import com.amazonaws.services.kms.model.MessageType;
-import com.amazonaws.services.kms.model.SignRequest;
-import com.amazonaws.services.kms.model.SignResult;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.services.kms.KmsClient;
+import software.amazon.awssdk.services.kms.model.*;
 
 public class CertRequestBuilder {
 
-  private transient AWSKMS kms;
-  private transient Config config;
+  private KmsClient kms;
+  private Config config;
 
   public CertRequestBuilder(File configFile) {
     config = new Config(configFile);
-    kms = AWSKMSClientBuilder.standard().build();
+    kms = KmsClient.builder().build();
   }
 
-  public void build() throws Exception {
+  public void build() throws IOException {
     SubjectPublicKeyInfo subjectKeyInfo = getPublicKey();
     PublicKey publicKey = new JcaPEMKeyConverter().getPublicKey(subjectKeyInfo);
     JcaPKCS10CertificationRequestBuilder csrBuilder = new JcaPKCS10CertificationRequestBuilder(createName(), publicKey);
@@ -70,11 +63,10 @@ public class CertRequestBuilder {
   }
 
 
-  private SubjectPublicKeyInfo getPublicKey() throws Exception {
-    GetPublicKeyRequest req = new GetPublicKeyRequest().withKeyId(config.getConfiguration(CFG_KEY_ID));
-    GetPublicKeyResult result = kms.getPublicKey(req);
-    SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(result.getPublicKey().array());
-    return keyInfo;
+  private SubjectPublicKeyInfo getPublicKey() {
+    GetPublicKeyRequest req = GetPublicKeyRequest.builder().keyId(config.getConfiguration(CFG_KEY_ID)).build();
+    GetPublicKeyResponse result = kms.getPublicKey(req);
+    return SubjectPublicKeyInfo.getInstance(result.publicKey().asByteArray());
   }
 
   public static void main(String[] argv) throws Exception {
@@ -85,7 +77,7 @@ public class CertRequestBuilder {
 
 
   private class KMSContentSigner implements ContentSigner {
-    private ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
     @Override
     public AlgorithmIdentifier getAlgorithmIdentifier() {
@@ -100,16 +92,17 @@ public class CertRequestBuilder {
     @Override
     public byte[] getSignature() {
       try {
-        SignRequest request =  new SignRequest()
-            .withKeyId(config.getConfiguration(CFG_KEY_ID))
-            .withSigningAlgorithm(KMS_SIG_ALG)
-            .withMessageType(MessageType.RAW)
-            .withMessage(ByteBuffer.wrap(stream.toByteArray()));
-        SignResult result = kms.sign(request);
-        return result.getSignature().array();
+        SignRequest request =  SignRequest.builder()
+            .keyId(config.getConfiguration(CFG_KEY_ID))
+            .signingAlgorithm(KMS_SIG_ALG)
+            .messageType(MessageType.RAW)
+            .message(SdkBytes.fromByteArray(stream.toByteArray()))
+            .build();
+        SignResponse result = kms.sign(request);
+        return result.signature().asByteArray();
       } catch (Exception e) {
         throw new RuntimeException("exception obtaining signature: " + e.getMessage(), e);
       }
     }
-  };
+  }
 }

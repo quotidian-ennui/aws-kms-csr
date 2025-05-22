@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
-import com.amazonaws.services.kms.model.SigningAlgorithmSpec;
+import software.amazon.awssdk.services.kms.model.SigningAlgorithmSpec;
 
 public class Config {
 
@@ -36,8 +36,8 @@ public class Config {
     DEFAULTS.setProperty(CFG_CSR_STATE, "MyCounty");
     DEFAULTS.setProperty(CFG_CSR_COUNTRY_NAME, "GB");
   }
-  
-  private Properties configuration;
+
+  private final Properties configuration;
 
   public Config(File file) {
     configuration = loadQuietly(file);
@@ -58,6 +58,7 @@ public class Config {
     try (InputStream in = e.openStream()) {
       result.load(in);
     } catch (Exception ignored) {
+        // noop
     }
     return result;
   }
