@@ -1,82 +1,64 @@
-import org.apache.tools.ant.taskdefs.condition.Os
-
 plugins {
-  id "java-library"
-}
-ext {
-  slf4jVersion = '2.0.17'
-  awsSDKVersion='1.12.783'
-  bouncyCastleVersion = '1.78.1'
+    id "java-library"
 }
 
 defaultTasks 'clean', 'buildCSR'
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-group   = 'io.github.quotidian-ennui'
+group = 'io.github.quotidian-ennui'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 repositories {
-  mavenCentral()
+    mavenCentral()
 }
 
-
-def asFileUrl(filepath) {
-  return "file:///" + new java.net.URI(null, filepath, null).toASCIIString();
+static def asFileUrl(String filepath) {
+    return "file:///${new URI(null, filepath, null).toASCIIString()}"
 }
 
-configurations.all {
-  resolutionStrategy.cacheChangingModulesFor 60, "minutes"
-  resolutionStrategy.dependencySubstitution {
-    substitute module('commons-logging:commons-logging') using module("org.slf4j:jcl-over-slf4j:$slf4jVersion")
-
-    // Redirect bouncy castle jdk15on to jdk18on
-    substitute module('org.bouncycastle:bcprov-jdk15on') using module("org.bouncycastle:bcprov-jdk18on:$bouncyCastleVersion")
-    substitute module('org.bouncycastle:bcprov-ext-jdk15on') using module("org.bouncycastle:bcprov-ext-jdk18on:$bouncyCastleVersion")
-    substitute module('org.bouncycastle:bcpkix-jdk15on') using module("org.bouncycastle:bcpkix-jdk18on:$bouncyCastleVersion")
-    substitute module('org.bouncycastle:bcmail-jdk15on') using module("org.bouncycastle:bcmail-jdk18on:$bouncyCastleVersion")
-    substitute module('org.bouncycastle:bcutil-jdk15on') using module("org.bouncycastle:bcutil-jdk18on:$bouncyCastleVersion")
-    substitute module('org.bouncycastle:bcpg-jdk15on') using module("org.bouncycastle:bcpg-jdk18on:$bouncyCastleVersion")
-    substitute module('org.bouncycastle:bcjmail-jdk15on') using module("org.bouncycastle:bcjmail-jdk18on:$bouncyCastleVersion")
-    substitute module('org.bouncycastle:bctls-jdk15on') using module("org.bouncycastle:bctls-jdk18on:$bouncyCastleVersion")
-
-  }
+configurations.configureEach {
+    resolutionStrategy.cacheChangingModulesFor 60, "minutes"
+    resolutionStrategy.dependencySubstitution {
+        // bridge JCL to slf4j
+        substitute module('commons-logging:commons-logging') using module("org.slf4j:jcl-over-slf4j:$slf4jVersion")
+    }
 }
 
 dependencies {
-  implementation ("com.amazonaws:aws-java-sdk-kms:$awsSDKVersion")
-  implementation ("org.bouncycastle:bcprov-jdk18on:$bouncyCastleVersion")
-  implementation ("org.bouncycastle:bcpkix-jdk18on:$bouncyCastleVersion")
-  implementation ("org.bouncycastle:bcmail-jdk18on:$bouncyCastleVersion")
-  implementation (platform("com.fasterxml.jackson:jackson-bom:2.19.0"))
+    implementation("software.amazon.awssdk:kms:$awsSDKVersion")
+    implementation("org.bouncycastle:bcprov-jdk18on:$bouncyCastleVersion")
+    implementation("org.bouncycastle:bcpkix-jdk18on:$bouncyCastleVersion")
+    implementation("org.bouncycastle:bcmail-jdk18on:$bouncyCastleVersion")
 
-  implementation ("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
 
-  runtimeOnly ("org.slf4j:slf4j-simple:$slf4jVersion")
-  runtimeOnly ("org.slf4j:jcl-over-slf4j:$slf4jVersion")
-
-  if (JavaVersion.current().ordinal() >= JavaVersion.VERSION_1_9.ordinal()) {
-    runtimeOnly ("javax.xml.bind:jaxb-api:2.3.1")
-  }
-
+    runtimeOnly("org.slf4j:slf4j-simple:$slf4jVersion")
+    runtimeOnly("org.slf4j:jcl-over-slf4j:$slf4jVersion")
 }
 
-task LauncherJar(type: Jar) {
+tasks.register('LauncherJar', Jar) {
     archiveAppendix = "launcher"
-    ext.launcherClasspath = { ->
-      def verifyLibs = [
-              configurations.runtimeClasspath.collect { asFileUrl(it.getCanonicalPath()) }.join(' '),
-              asFileUrl(jar.archivePath.getCanonicalPath())
-              ]
-      return verifyLibs.join(' ')
+    def launcherClasspath = { ->
+        def verifyLibs = [
+            configurations.runtimeClasspath.collect { asFileUrl(it.getCanonicalPath()) }.join(' '),
+            asFileUrl(jar.archiveFile.get().asFile.getCanonicalPath())
+        ]
+        return verifyLibs.join(' ')
     }
     manifest {
-        attributes ("Class-Path": launcherClasspath())
+        attributes("Class-Path": launcherClasspath())
     }
 }
 
-task buildCSR(type: JavaExec, dependsOn: [jar, LauncherJar]) {
+tasks.register('buildCSR', JavaExec) {
+    dependsOn([jar, LauncherJar])
     group = 'Execution'
     description = 'Generate a CSR'
-    classpath = files(LauncherJar.archivePath)
+
+    classpath = files(LauncherJar.archiveFile)
     mainClass = 'io.github.quotidianennui.CertRequestBuilder'
-    args "$projectDir/build.properties"
+    args "${projectDir}/build.properties"
 }
