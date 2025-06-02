@@ -73,13 +73,11 @@ tasks.register('buildCSR', JavaExec) {
 
 spotless {
   groovyGradle {
-    ratchetFrom "origin/master"
     target '**/*.gradle'
     greclipse()
     leadingTabsToSpaces(2)
   }
   java {
-    ratchetFrom "origin/master"
     toggleOffOn()
     // While I don't necessarily like GJF, it is consistent.
     googleJavaFormat()

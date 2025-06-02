@@ -20,9 +20,11 @@ public class Config {
   public static final String CFG_CSR_STATE = "csr.stateOrProvinceName";
   public static final String CFG_CSR_COUNTRY_NAME = "csr.countryName";
   public static final String SIG_ALG = "SHA256WithRSA";
-  public static final SigningAlgorithmSpec KMS_SIG_ALG = SigningAlgorithmSpec.RSASSA_PKCS1_V1_5_SHA_256;
+  public static final SigningAlgorithmSpec KMS_SIG_ALG =
+      SigningAlgorithmSpec.RSASSA_PKCS1_V1_5_SHA_256;
 
-  public static final AlgorithmIdentifier SIG_ALG_ID = new DefaultSignatureAlgorithmIdentifierFinder().find(SIG_ALG);
+  public static final AlgorithmIdentifier SIG_ALG_ID =
+      new DefaultSignatureAlgorithmIdentifierFinder().find(SIG_ALG);
 
   private static final Properties DEFAULTS;
 
@@ -48,9 +50,10 @@ public class Config {
   }
 
   public static Properties loadQuietly(File in) {
-    return loadQuietly(() -> {
-      return new FileInputStream(in); // should have used Supplier but bah, exceptions.
-    });
+    return loadQuietly(
+        () -> {
+          return new FileInputStream(in); // should have used Supplier but bah, exceptions.
+        });
   }
 
   public static Properties loadQuietly(PropertyInputStream e) {
@@ -58,7 +61,7 @@ public class Config {
     try (InputStream in = e.openStream()) {
       result.load(in);
     } catch (Exception ignored) {
-        // noop
+      // noop
     }
     return result;
   }

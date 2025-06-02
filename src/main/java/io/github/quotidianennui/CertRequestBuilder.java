@@ -42,10 +42,12 @@ public class CertRequestBuilder {
   public void build() throws IOException {
     SubjectPublicKeyInfo subjectKeyInfo = getPublicKey();
     PublicKey publicKey = new JcaPEMKeyConverter().getPublicKey(subjectKeyInfo);
-    JcaPKCS10CertificationRequestBuilder csrBuilder = new JcaPKCS10CertificationRequestBuilder(createName(), publicKey);
+    JcaPKCS10CertificationRequestBuilder csrBuilder =
+        new JcaPKCS10CertificationRequestBuilder(createName(), publicKey);
     ContentSigner signer = new KMSContentSigner();
     PKCS10CertificationRequest csr = csrBuilder.build(signer);
-    try (PemWriter pemWriter = new PemWriter(new FileWriter(config.getConfiguration(CFG_CSR_OUTPUTFILE)))) {
+    try (PemWriter pemWriter =
+        new PemWriter(new FileWriter(config.getConfiguration(CFG_CSR_OUTPUTFILE)))) {
       PemObjectGenerator objGen = new MiscPEMGenerator(csr);
       pemWriter.writeObject(objGen);
     }
@@ -53,18 +55,21 @@ public class CertRequestBuilder {
 
   private X500Name createName() {
     X500NameBuilder subject = new X500NameBuilder();
-    subject.addRDN(X509ObjectIdentifiers.countryName, config.getConfiguration(CFG_CSR_COUNTRY_NAME));
-    subject.addRDN(X509ObjectIdentifiers.stateOrProvinceName, config.getConfiguration(CFG_CSR_STATE));
+    subject.addRDN(
+        X509ObjectIdentifiers.countryName, config.getConfiguration(CFG_CSR_COUNTRY_NAME));
+    subject.addRDN(
+        X509ObjectIdentifiers.stateOrProvinceName, config.getConfiguration(CFG_CSR_STATE));
     subject.addRDN(X509ObjectIdentifiers.localityName, config.getConfiguration(CFG_CSR_LOCALITY));
     subject.addRDN(X509ObjectIdentifiers.organization, config.getConfiguration(CFG_CSR_ORG));
-    subject.addRDN(X509ObjectIdentifiers.organizationalUnitName, config.getConfiguration(CFG_CSR_ORG_UNIT));
+    subject.addRDN(
+        X509ObjectIdentifiers.organizationalUnitName, config.getConfiguration(CFG_CSR_ORG_UNIT));
     subject.addRDN(X509ObjectIdentifiers.commonName, config.getConfiguration(CFG_CSR_COMMON_NAME));
     return subject.build();
   }
 
-
   private SubjectPublicKeyInfo getPublicKey() {
-    GetPublicKeyRequest req = GetPublicKeyRequest.builder().keyId(config.getConfiguration(CFG_KEY_ID)).build();
+    GetPublicKeyRequest req =
+        GetPublicKeyRequest.builder().keyId(config.getConfiguration(CFG_KEY_ID)).build();
     GetPublicKeyResponse result = kms.getPublicKey(req);
     return SubjectPublicKeyInfo.getInstance(result.publicKey().asByteArray());
   }
@@ -74,7 +79,6 @@ public class CertRequestBuilder {
     String config = argv[0];
     new CertRequestBuilder(new File(config)).build();
   }
-
 
   private class KMSContentSigner implements ContentSigner {
     private final ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -92,12 +96,13 @@ public class CertRequestBuilder {
     @Override
     public byte[] getSignature() {
       try {
-        SignRequest request =  SignRequest.builder()
-            .keyId(config.getConfiguration(CFG_KEY_ID))
-            .signingAlgorithm(KMS_SIG_ALG)
-            .messageType(MessageType.RAW)
-            .message(SdkBytes.fromByteArray(stream.toByteArray()))
-            .build();
+        SignRequest request =
+            SignRequest.builder()
+                .keyId(config.getConfiguration(CFG_KEY_ID))
+                .signingAlgorithm(KMS_SIG_ALG)
+                .messageType(MessageType.RAW)
+                .message(SdkBytes.fromByteArray(stream.toByteArray()))
+                .build();
         SignResponse result = kms.sign(request);
         return result.signature().asByteArray();
       } catch (Exception e) {
