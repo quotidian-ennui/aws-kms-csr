@@ -6,7 +6,7 @@ plugins {
 ext {
   slf4jVersion = '2.0.17'
   awsSDKVersion = '2.33.0'
-  bouncyCastleVersion = '1.81'
+  bouncyCastleVersion = '1.82'
 }
 
 defaultTasks 'clean', 'buildCSR'
