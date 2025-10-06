@@ -48,7 +48,7 @@ jobs:
         sha: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
     - name: merge-if-built
       continue-on-error: true
-      uses: fastify/github-action-merge-dependabot@v3.11.1
+      uses: fastify/github-action-merge-dependabot@v3.11.2
       with:
         pr-number: ${{ steps.findpr.outputs.pr }}
         target: minor
