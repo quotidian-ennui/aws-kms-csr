@@ -1,0 +1,14 @@
+# This is the 'CVE' or GHSA ID.
+"CVE-2026-33871":
+  # a list of packages affected, it's usually a 1-1 relationship, but who knows.
+  packages:
+    - io.netty:netty-codec-http2
+  # Can be one of: fix_started, inaccurate, no_bandwidth, not_used, tolerable_risk
+  reason: not_used
+  # Short comment for the dismissal reason
+  comment: Not running netty as an http/2 server. Commandline one-shot tool
+"CVE-2026-33870":
+  packages:
+    - io.netty:netty-codec-http
+  reason: tolerable_risk
+  comment: Commandline one-shot tool
