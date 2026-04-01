@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: setup-java
-        uses: quotidian-ennui/actions-olio/setup-java-gradle@main
+        uses: quotidian-ennui/actions-olio/setup-java-gradle@80eb94186f07a299ea6a6954d56ee20926db1cd7 # v0.10.1
         with:
           java-version: "21"
           distribution: "temurin"
