@@ -1,14 +1,18 @@
 name: check
-
+run-name: Build ${{ github.event.client_payload.detail.pull_request }}
 on:
+  repository_dispatch:
+    types:
+      - pr-trigger
   push:
-    branches:
-      - master
-  pull_request:
     branches:
       - master
 
 permissions: {}
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   build:
@@ -19,6 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          ref: ${{ github.event.client_payload.base.ref }}
           fetch-depth: 0
           persist-credentials: false
       - name: setup-java
@@ -26,30 +31,46 @@ jobs:
         with:
           java-version: "21"
           distribution: "temurin"
-          writeable: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+          writeable: ${{ github.event.client_payload.detail.pull_request == '' }}
       - name: Build with Gradle
         run: |
           ./gradlew check
 
   dependabot-merge:
-    needs: build
+    needs:
+      - build
     permissions:
       contents: write
       pull-requests: write
-    if: |
-      github.actor == 'dependabot[bot]'
+    if: github.event.client_payload.detail.pull_request != ''
     runs-on: ubuntu-latest
     steps:
-      - name: Find associated PR
-        uses: jwalton/gh-find-current-pr@f3d61b485d2801773f7a07b2aaa3306bd8f8e653 # v1.3.5
-        id: findpr
+      - name: Checkout branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          github-token: ${{ github.token }}
-          state: open
-          sha: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
-      - name: merge-if-built
-        continue-on-error: true
-        uses: fastify/github-action-merge-dependabot@30c3f8f14a4f7b315ba38dbc1b793d27128fef82 # v3.12.0
+          ref: ${{ github.event.client_payload.base.ref }}
+          persist-credentials: false
+      - name: "Create Token"
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: app-token
         with:
-          pr-number: ${{ steps.findpr.outputs.pr }}
-          target: minor
+          app-id: ${{ vars.WORKFLOW_UPDATE_APP_ID }}
+          private-key: ${{ secrets.WORKFLOW_UPDATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: "${{ github.event.repository.name}}"
+      - name: Repository Action Merge
+        id: action_merge
+        uses: quotidian-ennui/actions-olio/dependabot-merge@448a2329caa783bbfe2ad58fc2123f7e05efae89 # v0.10.3
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          change_filter: ".github/workflows/**"
+          merge_commentary: "Merge Workflow Actions"
+      - name: Dependabot Merge
+        id: merge_gradle_dependencies
+        uses: quotidian-ennui/actions-olio/dependabot-merge@448a2329caa783bbfe2ad58fc2123f7e05efae89 # v0.10.3
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          change_filter: "**/*.gradle*,**/gradle-wrapper.properties,gradle/*.versions.toml,**/versions.properties"
+          automerge_level: "semver-patch"
+          merge_commentary: "Merge Gradle Dependencies"
+          filter_separator: ","

@@ -1,0 +1,22 @@
+name: pr-trigger
+on:
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  dependabot-build-request:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    name: PR Trigger
+    steps:
+      - name: dispatch
+        uses: quotidian-ennui/actions-olio/pr-trigger@448a2329caa783bbfe2ad58fc2123f7e05efae89 # v0.10.3
