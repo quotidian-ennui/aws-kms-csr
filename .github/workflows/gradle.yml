@@ -10,6 +10,10 @@ on:
 
 permissions: {}
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   build:
     permissions:
@@ -31,13 +35,46 @@ jobs:
         run: |
           ./gradlew check
 
-  dependabot-merge:
-    needs: build
+  changed_files:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      workflow_files: ${{ steps.changes.outputs.workflows_any_changed == 'true' }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Changed Files
+        id: changes
+        uses: tj-actions/changed-files@22103cc46bda19c2b464ffe86db46df6922fd323 # v47.0.5
+        with:
+          files_yaml: |
+            workflows:
+              - ".github/workflows/**"
+
+  merge_actions:
+    needs:
+      - build
+      - changed_files
+    if: |
+      needs.changed_files.outputs.workflow_files == 'true' && github.actor == 'dependabot[bot]'
+    uses: quotidian-ennui/workflows-olio/.github/workflows/action-dependabot-merge.yml@main
+    with:
+      app_id: ${{ vars.WORKFLOW_UPDATE_APP_ID }}
+    secrets:
+      app_private_key: ${{ secrets.WORKFLOW_UPDATE_KEY }}
+
+  merge_java:
+    needs:
+      - build
+      - changed_files
+    if: |
+      needs.changed_files.outputs.workflow_files == 'false' && github.actor == 'dependabot[bot]'
     permissions:
       contents: write
       pull-requests: write
-    if: |
-      github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Find associated PR
