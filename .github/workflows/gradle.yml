@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: setup-java
-        uses: quotidian-ennui/actions-olio/setup-java-gradle@448a2329caa783bbfe2ad58fc2123f7e05efae89 # v0.10.3
+        uses: quotidian-ennui/actions-olio/setup-java-gradle@7ee535611789442d6fa202dc02a19c81bf2c4458 # v0.10.4
         with:
           java-version: "21"
           distribution: "temurin"
@@ -60,14 +60,14 @@ jobs:
           repositories: "${{ github.event.repository.name}}"
       - name: Repository Action Merge
         id: action_merge
-        uses: quotidian-ennui/actions-olio/dependabot-merge@448a2329caa783bbfe2ad58fc2123f7e05efae89 # v0.10.3
+        uses: quotidian-ennui/actions-olio/dependabot-merge@7ee535611789442d6fa202dc02a19c81bf2c4458 # v0.10.4
         with:
           token: ${{ steps.app-token.outputs.token }}
           change_filter: ".github/workflows/**"
           merge_commentary: "Merge Workflow Actions"
       - name: Dependabot Merge
         id: merge_gradle_dependencies
-        uses: quotidian-ennui/actions-olio/dependabot-merge@448a2329caa783bbfe2ad58fc2123f7e05efae89 # v0.10.3
+        uses: quotidian-ennui/actions-olio/dependabot-merge@7ee535611789442d6fa202dc02a19c81bf2c4458 # v0.10.4
         with:
           token: ${{ steps.app-token.outputs.token }}
           change_filter: "**/*.gradle*,**/gradle-wrapper.properties,gradle/*.versions.toml,**/versions.properties"
