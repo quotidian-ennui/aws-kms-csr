@@ -35,7 +35,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
       - name: "Dismiss alerts"
         id: dismiss-alerts
-        uses: quotidian-ennui/actions-olio/dismiss-dependabot-alerts@a23dce3e6ff1ea5b39cfefd23a604426be7868f1 # v1.1.4
+        uses: quotidian-ennui/actions-olio/dismiss-dependabot-alerts@7b36405b1649367c77cb0b041ef8a1f8ad227254 # v1.2.0
         with:
           token: ${{ steps.app-token.outputs.token }}
           dismissal_file: .github/dismiss-alerts.yml
