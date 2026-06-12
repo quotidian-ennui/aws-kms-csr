@@ -28,8 +28,7 @@ updates:
     cooldown:
       default-days: 3
       exclude:
-        - "quotidian-ennui/workflows-olio/*"
-        - "quotidian-ennui/actions-olio/*"
+        - "quotidian-ennui/*"
     groups:
       workflows-olio:
         patterns:
