@@ -72,11 +72,6 @@ tasks.register('buildCSR', JavaExec) {
 }
 
 spotless {
-  groovyGradle {
-    target '**/*.gradle'
-    greclipse()
-    leadingTabsToSpaces(2)
-  }
   java {
     toggleOffOn()
     // While I don't necessarily like GJF, it is consistent.
