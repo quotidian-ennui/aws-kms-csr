@@ -50,10 +50,9 @@ public class Config {
   }
 
   public static Properties loadQuietly(File in) {
-    return loadQuietly(
-        () -> {
-          return new FileInputStream(in); // should have used Supplier but bah, exceptions.
-        });
+    return loadQuietly(() -> {
+      return new FileInputStream(in); // should have used Supplier but bah, exceptions.
+    });
   }
 
   public static Properties loadQuietly(PropertyInputStream e) {
